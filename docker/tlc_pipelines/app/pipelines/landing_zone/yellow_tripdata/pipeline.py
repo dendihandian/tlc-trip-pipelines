@@ -1,0 +1,98 @@
+"""
+docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py incremental
+docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
+"""
+
+import sys
+import os
+sys.path.append(os.getcwd())
+
+from utils.cli import Annotated, Argument, Option, BadParameter
+from utils.cli import run, validate_parameter
+from utils.cli import VALIDATION_ERROR_DATE
+from utils.common import DATE_FORMAT
+from utils.common import time_it, get_current_datetime, is_valid_date, sub_days, generate_months_range
+from utils.dataframe import read_parquet, generate_md5
+from pyarrow.lib import ArrowInvalid
+import urllib.request
+import urllib.error
+
+@time_it
+def read_yellow_taxi_data(url):
+    """
+    Membaca file parquet dari URL dengan penanganan error yang spesifik.
+    """
+    try:
+        # 1. Cek apakah URL valid dan bisa diakses
+        # (Langkah opsional sebelum read_parquet untuk verifikasi cepat)
+        df = read_parquet(url, engine='pyarrow')
+        return df
+
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            print(f"❌ Error 404: File tidak ditemukan di URL tersebut. Pastikan bulan/tahun sudah benar.")
+        else:
+            print(f"❌ Error HTTP: Terjadi masalah koneksi dengan kode {e.code}")
+            
+    except ArrowInvalid:
+        print("❌ Error: File ditemukan tetapi formatnya bukan Parquet yang valid atau rusak.")
+        
+    except FileNotFoundError:
+        print("❌ Error: URL tidak valid atau tidak dapat ditemukan.")
+        
+    except Exception as e:
+        print(f"❌ Terjadi kesalahan yang tidak terduga: {e}")
+        
+    return None
+
+@time_it
+def preprocess_data(df):
+    print('generating _md5 ...')
+    df = generate_md5(df)
+
+    print('generating _ingested_at ...')
+    df['_ingested_at'] = str(get_current_datetime())
+
+    return df
+
+@time_it
+def process_by_month(month: str):
+    y = str(month).split('-')[0]
+    m = str(month).split('-')[1]
+
+    url_parquet = f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{y}-{m}.parquet"
+    print(f'getting data from {url_parquet} ...')
+    df = read_yellow_taxi_data(url_parquet)
+
+    if df is not None:
+        df = preprocess_data(df.sample(100000)) # my cpu is exhausted processing this, so temporary limit to 100000
+        print(df.shape)
+        print(df.head())
+    else:
+        print(f'data is not available for {url_parquet}')
+
+@time_it
+def backfill(start_date: str, end_date: str):
+    months_range = generate_months_range(start_date, end_date)
+    for month in months_range:
+        process_by_month(month)
+
+@time_it
+def incremental():
+    start_date  = sub_days(get_current_datetime(), 60).strftime(DATE_FORMAT)
+    end_date    = get_current_datetime().strftime(DATE_FORMAT)
+    backfill(start_date, end_date)
+
+@time_it
+def main(
+    mode:       Annotated[str, Argument(help="incremental or backfill")],
+    start_date: Annotated[str, Option(help="start date", callback=lambda date: validate_parameter(date, is_valid_date, VALIDATION_ERROR_DATE) if date is not None else None)] = None,
+    end_date:   Annotated[str, Option(help="end date", callback=lambda date: validate_parameter(date, is_valid_date, VALIDATION_ERROR_DATE) if date is not None else None)] = None,
+):
+    if mode == 'incremental':
+        incremental()
+    elif mode == 'backfill':
+        backfill(start_date, end_date)
+
+if __name__ == '__main__':
+    run(main)

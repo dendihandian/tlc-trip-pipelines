@@ -27,9 +27,9 @@ services:
     networks:
       - tlc_trip_pipelines
 
-  pipelines:
-    build: ./docker/pipelines
-    container_name: pipelines
+  tlc_pipelines:
+    build: ./docker/tlc_pipelines
+    container_name: tlc_pipelines
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -37,7 +37,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./docker/pipelines/app:/app
+      - ./docker/tlc_pipelines/app:/app
     networks:
       - tlc_trip_pipelines
 
