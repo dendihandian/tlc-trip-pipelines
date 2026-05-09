@@ -2,6 +2,7 @@ from pandas import read_parquet, read_csv
 from pandas import DataFrame
 from hashlib import md5
 from pyarrow.lib import ArrowInvalid
+from numpy import array_split
 import urllib.request
 import urllib.error
 
@@ -19,6 +20,16 @@ def generate_md5(df: DataFrame, columns_to_hash: list = None):
     )
 
     return df
+
+def split_dataframe(df, chunk_size=100000):
+    """
+    Memecah DataFrame menjadi list berisi DataFrame chunks.
+    """
+    # Menggunakan list comprehension untuk memecah berdasarkan baris
+    chunks = [df.iloc[i : i + chunk_size] for i in range(0, len(df), chunk_size)]
+    
+    print(f"📦 Data dipecah menjadi {len(chunks)} chunks (Pandas DataFrame).")
+    return chunks
 
 def read_parquet_from_url(url):
     """
