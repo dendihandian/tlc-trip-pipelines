@@ -32,6 +32,8 @@ services:
     container_name: tlc_pipelines
     restart: always
     environment:
+      - POSTGRES_HOST=postgres # use the postgres service name in this yml
+      - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:

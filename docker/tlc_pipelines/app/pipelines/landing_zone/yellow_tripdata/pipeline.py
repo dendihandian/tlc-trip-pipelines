@@ -12,41 +12,17 @@ from utils.cli import run, validate_parameter
 from utils.cli import VALIDATION_ERROR_DATE
 from utils.common import DATE_FORMAT
 from utils.common import time_it, get_current_datetime, is_valid_date, sub_days, generate_months_range
-from utils.dataframe import read_parquet, generate_md5
-from pyarrow.lib import ArrowInvalid
-import urllib.request
-import urllib.error
+from utils.dataframe import read_parquet_from_url, generate_md5
+from utils.db import save_to_postgresql
 
-@time_it
-def read_yellow_taxi_data(url):
-    """
-    Membaca file parquet dari URL dengan penanganan error yang spesifik.
-    """
-    try:
-        # 1. Cek apakah URL valid dan bisa diakses
-        # (Langkah opsional sebelum read_parquet untuk verifikasi cepat)
-        df = read_parquet(url, engine='pyarrow')
-        return df
-
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            print(f"❌ Error 404: File tidak ditemukan di URL tersebut. Pastikan bulan/tahun sudah benar.")
-        else:
-            print(f"❌ Error HTTP: Terjadi masalah koneksi dengan kode {e.code}")
-            
-    except ArrowInvalid:
-        print("❌ Error: File ditemukan tetapi formatnya bukan Parquet yang valid atau rusak.")
-        
-    except FileNotFoundError:
-        print("❌ Error: URL tidak valid atau tidak dapat ditemukan.")
-        
-    except Exception as e:
-        print(f"❌ Terjadi kesalahan yang tidak terduga: {e}")
-        
-    return None
+DATABASE = 'landing_zone'
+TABLE    = 'yellow_tripdata'
 
 @time_it
 def preprocess_data(df):
+    print('casting all columns to string ...')
+    df = df.astype(str)
+
     print('generating _md5 ...')
     df = generate_md5(df)
 
@@ -62,12 +38,11 @@ def process_by_month(month: str):
 
     url_parquet = f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{y}-{m}.parquet"
     print(f'getting data from {url_parquet} ...')
-    df = read_yellow_taxi_data(url_parquet)
+    df = read_parquet_from_url(url_parquet)
 
     if df is not None:
         df = preprocess_data(df.sample(100000)) # my cpu is exhausted processing this, so temporary limit to 100000
-        print(df.shape)
-        print(df.head())
+        save_to_postgresql(df, DATABASE, TABLE)
     else:
         print(f'data is not available for {url_parquet}')
 
