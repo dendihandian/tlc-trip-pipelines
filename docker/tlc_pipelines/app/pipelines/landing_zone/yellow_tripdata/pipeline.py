@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-from utils.cli import Annotated, Argument, Option, BadParameter
+from utils.cli import Annotated, Argument, Option
 from utils.cli import run, validate_parameter
 from utils.cli import VALIDATION_ERROR_DATE
 from utils.common import DATE_FORMAT
@@ -15,7 +15,8 @@ from utils.common import time_it, get_current_datetime, is_valid_date, sub_days,
 from utils.dataframe import read_parquet_from_url, generate_md5, split_dataframe
 from utils.db import save_to_postgresql
 
-DATABASE = 'landing_zone'
+DATABASE = 'datalake'
+SCHEMA   = 'landing'
 TABLE    = 'yellow_tripdata'
 
 @time_it
@@ -41,12 +42,12 @@ def process_by_month(month: str):
     df = read_parquet_from_url(url_parquet)
 
     if df is not None:
-        chunks = split_dataframe(df)
+        chunks = split_dataframe(df, chunk_size=50000)
         for i, chunk in enumerate(chunks):
             print(f"🚀 Memproses chunk ke-{i+1} dari {len(chunks)} dengan {len(chunk)} baris...")
-            if chunk 
-            chunk = preprocess_data(chunk)
-            save_to_postgresql(chunk, DATABASE, TABLE)
+            if chunk is not None:
+                chunk = preprocess_data(chunk)
+                save_to_postgresql(chunk, DATABASE, SCHEMA, TABLE)
 
     else:
         print(f'data is not available for {url_parquet}')

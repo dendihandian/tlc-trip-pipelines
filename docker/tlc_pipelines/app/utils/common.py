@@ -9,11 +9,12 @@ DEFAULT_TIMEZONE = 'Asia/Jakarta'
 
 def time_it(func):
     """
-    Decorator untuk mengukur durasi eksekusi sebuah fungsi.
+    Decorator untuk mengukur durasi eksekusi sebuah fungsi
+    dengan output format Jam:Menit:Detik.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Catat waktu mulai
+        # Catat waktu mulai (menggunakan perf_counter untuk presisi tinggi)
         start_time = time.perf_counter()
         
         # Eksekusi fungsi yang dibungkus
@@ -22,9 +23,14 @@ def time_it(func):
         # Catat waktu selesai
         end_time = time.perf_counter()
         
-        # Hitung durasi
-        duration = end_time - start_time
-        print(f"⏱️  Fungsi '{func.__name__}' selesai dalam {duration:.4f} detik")
+        # Hitung selisih durasi
+        duration_seconds = end_time - start_time
+        
+        # Mengonversi detik ke format jam:menit:detik menggunakan timedelta
+        # .4f digunakan untuk mempertahankan presisi milidetik di bagian akhir
+        readable_duration = str(timedelta(seconds=duration_seconds))
+        
+        print(f"⏱️  Fungsi '{func.__name__}' selesai dalam {readable_duration}")
         
         return result
     
