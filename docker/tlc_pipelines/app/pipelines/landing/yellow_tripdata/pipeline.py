@@ -1,6 +1,6 @@
 """
-docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py incremental
-docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
+docker-compose exec tlc_pipelines python pipelines/landing/yellow_tripdata/pipeline.py incremental
+docker-compose exec tlc_pipelines python pipelines/landing/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
 """
 
 import sys

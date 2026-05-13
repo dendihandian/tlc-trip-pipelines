@@ -1,4 +1,4 @@
-CREATE TABLE raw.yellow_tripdata (
+CREATE TABLE transformed.yellow_tripdata_detail (
     vendor_id INT,
     tpep_pickup_datetime TIMESTAMP,
     tpep_dropoff_datetime TIMESTAMP,
@@ -21,12 +21,11 @@ CREATE TABLE raw.yellow_tripdata (
     cbd_congestion_fee NUMERIC,
     _md5 TEXT,
     _date DATE,
-    _ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    _ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    pu_borough TEXT,
+    pu_zone TEXT,
+    pu_service_zone TEXT,
+    do_borough TEXT,
+    do_zone TEXT,
+    do_service_zone TEXT
 );
-
-/*
-SELECT ordinal_position, column_name, data_type
-FROM information_schema.columns
-WHERE table_catalog = 'datalake' and table_schema = 'raw' and table_name = 'yellow_tripdata'
-ORDER BY ordinal_position ASC
-*/
