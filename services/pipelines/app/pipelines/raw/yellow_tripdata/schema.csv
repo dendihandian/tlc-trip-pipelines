@@ -1,0 +1,24 @@
+ordinal_position,column_name,data_type
+1,vendor_id,integer
+2,tpep_pickup_datetime,timestamp without time zone
+3,tpep_dropoff_datetime,timestamp without time zone
+4,passenger_count,integer
+5,trip_distance,numeric
+6,rate_code_id,integer
+7,store_and_fwd_flag,character varying
+8,pu_location_id,character varying
+9,do_location_id,character varying
+10,payment_type,integer
+11,fare_amount,numeric
+12,extra,numeric
+13,mta_tax,numeric
+14,tip_amount,numeric
+15,tolls_amount,numeric
+16,improvement_surcharge,numeric
+17,total_amount,numeric
+18,congestion_surcharge,numeric
+19,airport_fee,numeric
+20,cbd_congestion_fee,numeric
+21,_md5,text
+22,_date,date
+23,_ingested_at,timestamp without time zone

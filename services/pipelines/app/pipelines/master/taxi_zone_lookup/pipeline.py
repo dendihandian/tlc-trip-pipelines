@@ -6,15 +6,14 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-from utils.cli import Annotated, Argument, Option, BadParameter
-from utils.cli import run, validate_parameter
-from utils.cli import VALIDATION_ERROR_DATE
-from utils.common import DATE_FORMAT
-from utils.common import time_it, get_current_datetime, is_valid_date, sub_days, generate_months_range
-from utils.dataframe import read_csv_from_url, generate_md5
+from utils.cli import Annotated, Argument
+from utils.common import time_it, get_current_datetime
+from utils.dataframe import read_csv_from_url
 from utils.db import save_to_postgresql
+from utils.cli import run
 
-DATABASE = 'master'
+DATABASE = 'datalake'
+SCHEMA   = 'master'
 TABLE    = 'taxi_zone_lookup'
 
 @time_it
@@ -34,13 +33,13 @@ def incremental():
 
     if df is not None:
         df = preprocess_data(df)
-        save_to_postgresql(df, DATABASE, TABLE)
+        save_to_postgresql(df, DATABASE, SCHEMA, TABLE)
     else:
         print(f'data is not available for {url_parquet}')
 
 @time_it
 def main(
-    mode:       Annotated[str, Argument(help="incremental or backfill")],
+    mode: Annotated[str, Argument(help="incremental or backfill")],
 ):
     if mode == 'incremental':
         incremental()

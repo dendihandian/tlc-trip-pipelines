@@ -1,0 +1,6 @@
+ordinal_position,column_name,data_type
+1,LocationID,text
+2,Borough,text
+3,Zone,text
+4,service_zone,text
+5,_ingested_at,text
