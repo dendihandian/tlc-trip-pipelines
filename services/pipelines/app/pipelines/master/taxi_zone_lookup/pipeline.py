@@ -1,5 +1,5 @@
 """
-docker-compose exec tlc_pipelines python pipelines/master/taxi_zone_lookup/pipeline.py incremental
+docker-compose exec pipelines python pipelines/master/taxi_zone_lookup/pipeline.py incremental
 """
 
 import sys

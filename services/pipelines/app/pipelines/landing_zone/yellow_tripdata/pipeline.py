@@ -1,6 +1,6 @@
 """
-docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py incremental
-docker-compose exec tlc_pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
+docker-compose exec pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py incremental
+docker-compose exec pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
 """
 
 import sys
@@ -44,7 +44,6 @@ def process_by_month(month: str):
         chunks = split_dataframe(df)
         for i, chunk in enumerate(chunks):
             print(f"🚀 Memproses chunk ke-{i+1} dari {len(chunks)} dengan {len(chunk)} baris...")
-            if chunk 
             chunk = preprocess_data(chunk)
             save_to_postgresql(chunk, DATABASE, TABLE)
 

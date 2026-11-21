@@ -1,0 +1,1 @@
+FROM sosedoff/pgweb:0.17.0

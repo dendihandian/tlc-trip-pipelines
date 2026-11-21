@@ -1,7 +1,7 @@
 services:
-  postgres:
-    build: ./docker/postgres
-    container_name: postgres
+  db:
+    build: ./services/db
+    container_name: db
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -10,36 +10,42 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - ./docker/postgres/.volume:/var/lib/postgresql
+      - ./services/db/.volume:/var/lib/postgresql
     networks:
-      - tlc_trip_pipelines
+      tlc_trip_pipelines:
+        aliases:
+          - postgres
+          - db
 
-  pgweb:
-    build: ./docker/pgweb
-    container_name: pgweb
+  db-ui:
+    build: ./services/db-ui
+    container_name: db-ui
     restart: always
     environment:
-      - PGWEB_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=disable
+      - PGWEB_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DATABASE}?sslmode=disable
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DATABASE}?sslmode=disable
     ports:
-      - "${PGWEB_PORT}:8081"
+      - "${DB_UI_PORT:-${PGWEB_PORT:-8081}}:8081"
     depends_on:
-      - postgres
+      - db
     networks:
       - tlc_trip_pipelines
 
-  tlc_pipelines:
-    build: ./docker/tlc_pipelines
-    container_name: tlc_pipelines
+  pipelines:
+    build: ./services/pipelines
+    container_name: pipelines
     restart: always
     environment:
-      - POSTGRES_HOST=postgres # use the postgres service name in this yml
+      - POSTGRES_HOST=db # use the db service name in this yml
+      - DB_HOST=db
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
     depends_on:
-      - postgres
+      - db
     volumes:
-      - ./docker/tlc_pipelines/app:/app
+      - ./services/pipelines/app:/app
     networks:
       - tlc_trip_pipelines
 

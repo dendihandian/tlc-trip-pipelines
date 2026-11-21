@@ -12,5 +12,7 @@
 ## Run Pipelines
 
 ```
-docker-compose exec pipelines python main.py
+docker-compose exec pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py incremental
+docker-compose exec pipelines python pipelines/landing_zone/yellow_tripdata/pipeline.py backfill --start-date 2025-01-01 --end-date 2025-12-31
+docker-compose exec pipelines python pipelines/master/taxi_zone_lookup/pipeline.py incremental
 ```

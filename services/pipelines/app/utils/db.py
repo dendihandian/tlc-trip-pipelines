@@ -2,10 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from os import environ
 
-POSTGRES_HOST       = environ.get('POSTGRES_HOST')
-POSTGRES_USER       = environ.get('POSTGRES_USER')
-POSTGRES_PASSWORD   = environ.get('POSTGRES_PASSWORD')
-POSTGRES_PORT       = environ.get('POSTGRES_PORT')
+POSTGRES_HOST       = environ.get('POSTGRES_HOST') or environ.get('DB_HOST') or 'db'
+POSTGRES_USER       = environ.get('POSTGRES_USER') or environ.get('DB_USER') or 'admin'
+POSTGRES_PASSWORD   = environ.get('POSTGRES_PASSWORD') or environ.get('DB_PASSWORD') or ''
+POSTGRES_PORT       = environ.get('POSTGRES_PORT') or environ.get('DB_PORT') or '5432'
 
 def save_to_postgresql(df, database, table, mode='append'):
     """
